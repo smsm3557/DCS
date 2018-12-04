@@ -7,6 +7,7 @@
 class DistributedEnergyResource {
     public:
         // constructor / destructor
+        DistributedEnergyResource ();  // defaults to zero value properties
         DistributedEnergyResource (std::map <std::string, std::string> init);
         virtual ~DistributedEnergyResource ();
         virtual void Loop (float delta_time);
@@ -15,12 +16,16 @@ class DistributedEnergyResource {
     public:
         // set export methods
         void SetExportWatts (unsigned int power);
+        void SetExportPower (float power);
+        void SetExportEnergy (float energy);
         void SetRatedExportPower (unsigned int watts);
         void SetRatedExportEnergy (unsigned int watt_hours);
         void SetExportRamp (unsigned int watts_per_second);
 
         // set import methods
         void SetImportWatts (unsigned int power);
+        void SetImportPower (float power);
+        void SetImportEnergy (float energy);
         void SetRatedImportPower (unsigned int watts);
         void SetRatedImportEnergy (unsigned int watt_hours);
         void SetImportRamp (unsigned int watts_per_second);
@@ -32,6 +37,9 @@ class DistributedEnergyResource {
         void SetRemoteTime (unsigned int utc);
         void SetPrice (float price);
 
+        // set log properties
+        void SetLogPath (std::string path);
+        void SetLogIncrement (unsigned int inc);
 
     public:
         // get export methods
@@ -50,6 +58,9 @@ class DistributedEnergyResource {
 
         // get idle methods
         unsigned int GetIdleLosses ();
+
+        // get log properties
+        std::string GetLogPath ();
 
         // remote properties
         unsigned int GetRemoteTime ();

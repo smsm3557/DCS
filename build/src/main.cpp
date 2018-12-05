@@ -44,6 +44,8 @@
 #include "include/tsu.h"
 #include "include/aj_utility.h"
 
+#include "include/SunSpecModbus.h"
+
 // NAMESPACES
 using namespace std;
 using namespace ajn;
@@ -205,6 +207,13 @@ int main (int argc, char** argv) {
 
     // read config file for program configurations and object attributes
     tsu::config_map configs = tsu::MapConfigFile (arguments["config"]);
+
+    cout << "\tCreating Sunspec Device\n";
+    SunSpecModbus device (configs["SunSpec"]);
+    map <string, string> points = device.ReadBlock (1);
+    for (const auto point : points) {
+        cout << point.first << " , " << point.second << endl;
+    }
 
     // create program objects
     cout << "\tCreating Distributed Energy Resource\n";

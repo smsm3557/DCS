@@ -16,8 +16,15 @@
 // - https://www.technical-recipes.com/2014/using-boostproperty_tree/
 class SunSpecModel {
 public:
-    SunSpecModel (unsigned int did, unsigned int offset);
+    // constructor / destructor
+    SunSpecModel (
+        unsigned int did, unsigned int offset, std::string model_path
+    );
     virtual ~SunSpecModel ();
+
+    // accessors
+    unsigned int GetOffset ();
+    unsigned int GetLength ();
 
 public:
     std::map <std::string, std::string> BlockToPoints (

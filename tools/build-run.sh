@@ -20,4 +20,4 @@ export SRC=dcs
 make -C ../build
 
 # run
-./../build/bin/debug/$SRC -c /home/tylor/dev/powerlab/DCS/data/config.ini -o y
+./../build/bin/debug/$SRC -c ../data/config.ini -o y

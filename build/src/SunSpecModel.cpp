@@ -7,29 +7,22 @@
 
 namespace pt = boost::property_tree;
 
-SunSpecModel::SunSpecModel (unsigned int did, unsigned int offset)
+SunSpecModel::SunSpecModel (unsigned int did, 
+                            unsigned int offset, 
+                            std::string model_path)
     : offset_(offset) {
-    // create filename using a base path, then pad the did number and append
-    // to the base path. The sunspec models are provided as xml so that will be
-    // the file type that is appended ot the end of the filename.
-    std::stringstream ss;
-    ss << "/home/tylor/dev/Workspace/SunSpec/data/models/smdx/smdx_";
-    ss << std::setfill ('0') << std::setw(5) << did;
-    ss << ".xml";
-    std::string filename = ss.str();
-    std::cout << filename << std::endl;
 
     // Use boosts xml parser to read file and store as member variable.
-    pt::xml_parser::read_xml(filename, smdx_);
+    pt::xml_parser::read_xml(model_path, smdx_);
     did_ = smdx_.get <unsigned int> ("sunSpecModels.model.<xmlattr>.id", 0);
     std::string name;
     name = smdx_.get <std::string> ("sunSpecModels.model.<xmlattr>.name", "");
     length_ = smdx_.get <unsigned int> ("sunSpecModels.model.<xmlattr>.len", 0);
 
-    std::cout << "SunSpec Model Found"
-        << "\n\tDID: " << did_
-        << "\n\tName: " << name
-        << "\n\tLength: " << length_ << std::endl;
+    std::cout << "\tSunSpec Model Found"
+        << "\n\t\tDID: " << did_
+        << "\n\t\tName: " << name
+        << "\n\t\tLength: " << length_ << std::endl;
 
     SunSpecModel::GetScalers ();
 }
@@ -37,6 +30,13 @@ SunSpecModel::SunSpecModel (unsigned int did, unsigned int offset)
 SunSpecModel::~SunSpecModel() {
 };
 
+unsigned int SunSpecModel::GetOffset () {
+    return offset_;
+};
+
+unsigned int SunSpecModel::GetLength () {
+    return length_;
+};
 
 // Block To Points
 // - convert raw modbus register block to it's corresponding SunSpec points
@@ -316,6 +316,8 @@ float SunSpecModel::BlockToScaler (const std::vector <uint16_t>& register_block,
                                    std::string scaler) {
     if (std::isdigit (*scaler.c_str())) {
         return std::stof(scaler);
+    } else if (scaler == "default") {
+        return 1;
     } else {
         return std::pow(10, register_block[scalers_[scaler]]);
     }

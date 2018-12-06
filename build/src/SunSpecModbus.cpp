@@ -116,14 +116,32 @@ std::map <std::string, std::string> SunSpecModbus::ReadBlock (unsigned int did){
             uint16_t raw[length];
             SunSpecModbus::ReadRegisters (offset, length, raw);
 
-            // convert block to vector
+            // convert raw registers to vector to pass to other functions
             std::vector <uint16_t> block (raw, raw + length);
             return model->BlockToPoints (block);
         }
     }
+    std::cout << "[ERROR]\t" << "Read Block: model not found\n";
+    std::map <std::string, std::string> empty_map;
+    return empty_map;
 }
 
-void SunSpecModbus::WriteBlock (unsigned int did) {
+void SunSpecModbus::WriteBlock (unsigned int did, 
+                                std::map <std::string, std::string>& points) {
+    for (const auto model : models_) {
+        if (*model == did) {
+            // read register block
+            unsigned int offset = model->GetOffset ();
+            unsigned int length = model->GetLength ();
+            std::vector <uint16_t> block = model->PointsToBlock (points);
+
+            // convert vector to array for writing to modbus registers
+            uint16_t* raw = block.data();
+            SunSpecModbus::WriteRegisters(offset, length, raw);
+            return;
+        }
+    } 
+    std::cout << "[ERROR]\t" << "Write Block: model not found\n";
 }
 
 std::string SunSpecModbus::FormatModelPath (unsigned int did) {

@@ -112,6 +112,8 @@ static std::map <std::string, std::string> ArgumentParser (int argc,
 
 // Resource Loop
 // - this loop runs the resource control loop at the desired frequency
+// - it subtracks processing time of the Loop () function to make the frequency
+// - more consistant
 void ResourceLoop (unsigned int sleep, DistributedEnergyResource* der_ptr) {
     unsigned int time_remaining, time_past;
     unsigned int time_wait = sleep;
@@ -141,6 +143,8 @@ void ResourceLoop (unsigned int sleep, DistributedEnergyResource* der_ptr) {
 
 // Operator Loop
 // - this loop runs the resource control loop at the desired frequency
+// - it subtracks processing time of the Loop () function to make the frequency
+// - more consistant
 void OperatorLoop (unsigned int sleep, Operator* oper_ptr) {
     unsigned int time_remaining;
     unsigned int time_wait = sleep;
@@ -167,6 +171,8 @@ void OperatorLoop (unsigned int sleep, Operator* oper_ptr) {
 
 // Smart Grid Device Loop
 // - this loop runs the resource control loop at the desired frequency
+// - it subtracks processing time of the Loop () function to make the frequency
+// - more consistant
 void SmartGridDeviceLoop (unsigned int sleep, SmartGridDevice* sgd_ptr) {
     unsigned int time_remaining;
     unsigned int time_wait = sleep;
@@ -194,9 +200,14 @@ void SmartGridDeviceLoop (unsigned int sleep, SmartGridDevice* sgd_ptr) {
 // Main
 // ----
 int main (int argc, char** argv) {
-    cout << "\n***\tDistributed Control System\t***\n";
+    cout 
+        << "\n**********************************"
+        << "\n*** Distributed Control System ***"
+        << "\n**********************************\n";
+
     cout << "Initialization...\n";
-   if (argc < 3) {
+    // if the config file is not passed to the program then exit
+   if (argc[1] != "-c") {
         string name = argv[0];
         ProgramHelp(name);
         return EXIT_FAILURE;
@@ -206,20 +217,23 @@ int main (int argc, char** argv) {
     // read config file for program configurations and object attributes
     tsu::config_map configs = tsu::MapConfigFile (arguments["config"]);
 
-    // create program objects
     cout << "\tCreating Distributed Energy Resource\n";
+    // ~ reference DistributedEnergyResource
     DistributedEnergyResource* der_ptr 
     	= new DistributedEnergyResource(configs["DER"]);
 
     cout << "\tCreating Operator\n";
+    // ~ reference Operator.h
     Operator* oper_ptr = new Operator(configs["Operator"]["schedule"], der_ptr);
 
     cout << "\tCreating Command Line Interface\n";
+    // ~ reference CommandLineInterface.h
     CommandLineInterface CLI(der_ptr);
 
     cout << "\tCreating AllJoyn Message Bus\n";
     try {
     	cout << "\t\tInitializing AllJoyn...\n";
+        // Must be called before any AllJoyn functionality
         AllJoynInit();
     } catch (exception &e) {
         cout << "[ERROR]: " << e.what() << endl;
@@ -229,6 +243,7 @@ int main (int argc, char** argv) {
     #ifdef ROUTER
         try {
         	cout << "\t\tInitializing AllJoyn Router...\n";
+            // Must be called before any AllJoyn routing functionality
             AllJoynRouterInit();
         } catch (exception &e) {
             cout << "[ERROR]: " << e.what() << endl;
@@ -236,20 +251,29 @@ int main (int argc, char** argv) {
         }
     #endif // ROUTER
 
+    cout << "\tCreating AllJoyn Bus Attachment\n";
+    // BusAttachment is the top-level object responsible for connecting to and
+    // optionally managing a message bus.
+    // ~ AllJoyn Docs
     string app = configs["AllJoyn"]["app"];
     bool allow_remote = true;
     BusAttachment* bus_ptr = new BusAttachment(app.c_str(), allow_remote);
 
-
     cout << "\tCreating AllJoyn About Data\n";
+    // The AboutObj class is responsible for transmitting information about the
+    // interfaces that are available for other applications to use.
+    // ~ AllJoyn Docs
     AboutData about_data("en");
     AboutObj* about_ptr = new AboutObj(*bus_ptr);
 
     cout << "\tCreating AllJoyn Session Port\n";
+    // inform users of session related events
+    // ~ AllJoyn Docs
     aj_utility::SessionPortListener SPL;
     SessionPort port = stoul(configs["AllJoyn"]["port"]);
 
     cout << "\tSetting up AllJoyn Bus Attachment...\n";
+    // ~ reference aj_utility.cpp
     QStatus status = aj_utility::SetupBusAttachment (configs,
                                                      port,
                                                      SPL,
@@ -257,10 +281,14 @@ int main (int argc, char** argv) {
                                                      &about_data);
 
     cout << "\tCreating AllJoyn Observer\n";
+    // takes care of discovery, session management and ProxyBusObject creation
+    // for bus objects.
+    // ~ AllJoyn Docs
     const char* server_name = configs["AllJoyn"]["server_interface"].c_str();
     Observer *obs_ptr = new Observer(*bus_ptr, &server_name, 1);
 
     cout << "\tCreating AllJoyn Server Listener\n";
+    // ~ reference ServerListener.cpp
     ServerListener *listner_ptr = new ServerListener(bus_ptr,
                                                      obs_ptr,
                                                      der_ptr,
@@ -268,6 +296,7 @@ int main (int argc, char** argv) {
     obs_ptr->RegisterListener(*listner_ptr);
 
     cout << "\tCreating AllJoyn Smart Grid Device\n";
+    // ~ reference SmartGridDevice.cpp
     const char* device_name = configs["AllJoyn"]["device_interface"].c_str();
     const char* path = configs["AllJoyn"]["path"].c_str();
     SmartGridDevice *sgd_ptr = new SmartGridDevice(der_ptr, 

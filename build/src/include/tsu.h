@@ -1,3 +1,9 @@
+// Author: Tylor Slay
+// Description:
+// 		This namespace was primary used to create the config.ini parser, but
+// 		also holds complicated functions that may be used by lots of other
+// 		classes such as FileToMatrix and ToString.
+
 #ifndef TSU_H_INCLUDED
 #define TSU_H_INCLUDED
 
@@ -10,9 +16,12 @@
 #include <regex>
 #include <map>
 
+
+// Tylor Slay Utilities is used to map config.ini files as well store files as
+// either vectors or matricies. 
 namespace tsu {
 
-// map<section, map<property, value>>
+// map <section, map <property, value>>
 // this is only for the INI file methods because it is huge
 typedef std::map<std::string, std::map<std::string, std::string>> config_map;
 
@@ -20,34 +29,42 @@ typedef std::map<std::string, std::map<std::string, std::string>> config_map;
 // this is used to create a matrix of strings
 typedef std::vector <std::vector <std::string>> string_matrix;
 
+
+// To String
+// - the to_string () function in STL doesn't seem to work for all cases so I 
+// - made this function as a hack to be uniform
 template <typename T>
 static std::string ToString (T t_value) {
 	std::ostringstream ss;
 	ss << t_value;
 	return ss.str();
-} // end ToString
+} // end To String
 
-// FileToString
-// - this method reads the entire file into a single string
-// - it is more efficient to pull the file into memory than parse lines in file
+// File To String
+// - this method reads the entire file into a single string.
+// - primarily used by FileToVector or FileToMatrix, but can be stand-alone
 static std::string FileToString (const std::string& kFilename) {
+
+	// open file at end of file
 	if (std::ifstream file{kFilename, std::ios::binary | std::ios::ate}) {
-	auto buffer = file.tellg();
-	std::string str(buffer, '\0'); // construct string to stream size
-	file.seekg(0);
-		if (file.read(&str[0], buffer)) {
+		auto buffer = file.tellg(); 	// what size is the file
+		std::string str(buffer, '\0'); 	// construct string of buffer size
+		file.seekg(0);					// return to start of file
+
+		try {
+			file.read(&str[0], buffer);
 			return str;
-		} else {
-			std::cout << "[ERROR]...reading file!\n";
+		} catch (const std::exception& e) {
+			std::cout << "[ERROR]...reading file: " << e.what () << std::endl;
 			return NULL;
 		}
 	} else {
 		std::cout << "[ERROR]...file not found!\n";
 		return NULL;
  	}
-} // end FileToString
+} // end File To String
 
-// MapConfigFile
+// Map Config File
 // - this method uses regular expressions to create a config map to
 // initialize class members or define program settings.
 // - https://en.wikipedia.org/wiki/Regular_expression
@@ -75,30 +92,33 @@ static config_map MapConfigFile (const std::string& kFilename) {
 		}
 	}
 	return file_map;
-} // end MapConfigFile
+} // end Map Config File
 
-// CountDelimiter
+// Count Delimiter
 // - count number of delimiters within string to make creating vectors and
 // - matrices more efficient
 static double CountDelimiter (const std::string& kString,
-	const char kDelimiter) {
+							  const char kDelimiter) {
 	std::string line, item;
 	double ctr = 0;
 	std::stringstream ss(kString);
+
+	// slit string by each new line character
 	while (std::getline(ss, line)) {
 		std::stringstream ss2(line);
+
+		// split string by each delimiter and count
 		while (std::getline(ss2, item, kDelimiter)) {
 			ctr++;
 		}
 	}
 	return ctr;
-} // end CountDelimiter
+} // end Count Delimiter
 
-// SplitString
+// Split String
 // - split string given delimiter
-// - operates on vector passed as a reference to reduce memory
 static std::vector<std::string> SplitString (const std::string& kString,
-	const char& kDelimiter) {
+											 const char& kDelimiter) {
 	std::vector<std::string> split_string;
 	std::string line, item;
 	double items = tsu::CountDelimiter(kString, kDelimiter);
@@ -111,39 +131,21 @@ static std::vector<std::string> SplitString (const std::string& kString,
 		}
 	}
 	return split_string;
-} // end SplitString
+} // end Split String
 
-// FileToVector
-// - open file and move to end for buffer size
-// - read file into allocated string
-// - parse string for delimiter
+// File To Vector
+// - parse string for delimiter and create vector for each delimiter
 static std::vector<std::string> FileToVector (const std::string& kFilename,
 	const char& kDelimiter) {
-	if (std::ifstream file{kFilename, std::ios::binary | std::ios::ate}) {
-		auto size = file.tellg();
-		std::string str(size, '\0'); // construct string to stream size
-		file.seekg(0);
-		if (file.read(&str[0], size)) {
-			return tsu::SplitString(str, kDelimiter);
-		} else {
-			std::cout << "[ERROR]...reading file!\n";
-			throw std::runtime_error("Error");
-		}
-	} else {
-		std::cout << "[ERROR]...file not found!\n";
-		throw std::runtime_error("Error");
-	}
-	std::cout << "[ERROR]...what did you even do!\n";
-	throw std::runtime_error("Error");
-} // end FileToVector
+	std::string whole_file = FileToString(kFilename);
+	return SplitString(whole_file, kDelimiter);
+} // end File To Vector
 
 // File To Matrix
-// - convert file to a vector of rows and then convert rows to a
-// - vector of vectors of columns.
-static string_matrix FileToMatrix (
-	const std::string &kFilename,
-	char kDelimiter,
-	unsigned int columns) {
+// - convert file to a vector of rows and then convert to vectors of columns.
+static string_matrix FileToMatrix (const std::string &kFilename,
+								   char kDelimiter,
+								   unsigned int columns) {
 	std::vector <std::string> file_vector;
 	file_vector = FileToVector (kFilename, kDelimiter);
 

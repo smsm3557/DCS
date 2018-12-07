@@ -1,3 +1,9 @@
+// Author: Tylor Slay
+// Description:
+//      This class is used to automatically control a der object using a
+//      predetermined schedule. The schedule has a known format so the operator
+//      used the ScheduleHeader structure to store the information
+
 #ifndef OPERATOR_H_INCLUDED
 #define OPERATOR_H_INCLUDED
 

@@ -1,3 +1,12 @@
+// Author: Tylor Slay
+// Description:
+// 		This class is used to simplify logging. It automatically loads the time
+// 		along with the context, path arguments and then passes all further args
+// 		using the (<<) operator.
+//
+// Example: 
+// Logger("INFO") << "Data\t" << "More Data";
+
 #ifndef LOGGER_H_INCLUDED
 #define LOGGER_H_INCLUDED
 
@@ -5,12 +14,6 @@
 #include <string>
 #include <sstream>
 
-// Logger
-// - simple create inline and load with context and path.
-// - then use "<<" to add arguments to log.
-//
-// Example: 
-// Logger("INFO") << "Data\t" << "More Data";
 class Logger {
 public:
 	// Constructor/Destructor

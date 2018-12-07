@@ -22,6 +22,11 @@
  *    PERFORMANCE OF THIS SOFTWARE.
 **********************************************************/
 
+// Author: Tylor Slay
+// Description:
+//      This class is used to handle control signals from the server as well as
+//      notify the server of property changes.
+
 #ifndef SMARTGRIDDEVICE_HPP_INCLUDED
 #define SMARTGRIDDEVICE_HPP_INCLUDED
 

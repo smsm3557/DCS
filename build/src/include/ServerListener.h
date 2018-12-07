@@ -22,6 +22,10 @@
  *    PERFORMANCE OF THIS SOFTWARE.
 **********************************************************/
 
+// Author: Tylor Slay
+// Description:
+//      This class is used to notify the der object of any changes to the server
+
 #ifndef SERVERLISTENER_HPP_INCLUDED
 #define SERVERLISTENER_HPP_INCLUDED
 

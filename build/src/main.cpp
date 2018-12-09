@@ -49,8 +49,8 @@ using namespace std;
 using namespace ajn;
 
 // GLOBALS
-bool done = false;  		// signal program to stop
-bool scheduled = false;		// stops operator if not enabled at runtime
+bool done = false;              // signal program to stop
+extern bool scheduled;  // toggle operator using program args/CLI
 
 // Program Help
 // - command line interface arguments during run, [] items have default values
@@ -67,6 +67,7 @@ static void ProgramHelp (const string& name) {
 static std::map <std::string, std::string> ArgumentParser (int argc, 
 														   char** argv) {
     string name = argv[0];
+    scheduled = false;
 
     // parse tokens
     map <string, string> parameters;
@@ -131,13 +132,10 @@ void ResourceLoop (unsigned int sleep, DistributedEnergyResource* der_ptr) {
         time_elapsed = time_end - time_start;
 
         // determine sleep duration after deducting process time
-        time_remaining = (time_wait - time_elapsed.count());
         if (time_wait - time_elapsed.count() > 0) {
-        	time_remaining = time_wait - time_elapsed.count();
-        } else {
-        	time_remaining = 0;
-        }
-        this_thread::sleep_for (chrono::milliseconds (time_remaining));
+            time_remaining = time_wait - time_elapsed.count();
+            this_thread::sleep_for (chrono::milliseconds (time_remaining));
+        } 
     }
 }  // end Resource Loop
 
@@ -159,13 +157,10 @@ void OperatorLoop (unsigned int sleep, Operator* oper_ptr) {
         time_elapsed = time_end - time_start;
 
         // determine sleep duration after deducting process time
-        time_remaining = (time_wait - time_elapsed.count());
         if (time_wait - time_elapsed.count() > 0) {
-        	time_remaining = time_wait - time_elapsed.count();
-        } else {
-        	time_remaining = 0;
-        }
-        this_thread::sleep_for (chrono::milliseconds (time_remaining));
+            time_remaining = time_wait - time_elapsed.count();
+            this_thread::sleep_for (chrono::milliseconds (time_remaining));
+        } 
     }
 }  // end Resource Loop
 
@@ -187,13 +182,10 @@ void SmartGridDeviceLoop (unsigned int sleep, SmartGridDevice* sgd_ptr) {
         time_elapsed = time_end - time_start;
 
         // determine sleep duration after deducting process time
-        time_remaining = (time_wait - time_elapsed.count());
         if (time_wait - time_elapsed.count() > 0) {
-        	time_remaining = time_wait - time_elapsed.count();
-        } else {
-        	time_remaining = 0;
-        }
-        this_thread::sleep_for (chrono::milliseconds (time_remaining));
+            time_remaining = time_wait - time_elapsed.count();
+            this_thread::sleep_for (chrono::milliseconds (time_remaining));
+        } 
     }
 }  // end Resource Loop
 
@@ -207,7 +199,7 @@ int main (int argc, char** argv) {
 
     cout << "Initialization...\n";
     // if the config file is not passed to the program then exit
-   if (argc[1] != "-c") {
+   if (strcmp(argv[1], "-c") != 0) {
         string name = argv[0];
         ProgramHelp(name);
         return EXIT_FAILURE;

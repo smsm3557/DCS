@@ -5,7 +5,26 @@
 #include "include/DistributedEnergyResource.h"
 #include "include/logger.h"
 
+// This constructor is to be used by child classes since they will populate
+// properties through device queries
+DistributedEnergyResource::DistributedEnergyResource () : 
+    rated_export_power_(0),
+    rated_export_energy_(0),
+    export_ramp_(0),
+    rated_import_power_(0),
+    rated_import_energy_(0),
+    import_ramp_(0),
+    idle_losses_(0),
+    export_power_(0),
+    import_power_(0),
+    export_watts_(0),
+    import_watts_(0),
+    delta_time_(0),
+    last_utc_(0) {
+    // do nothing
+}  // end constructor
 
+// this constructor is used to simulate a genaric der
 DistributedEnergyResource::DistributedEnergyResource (
     std::map <std::string, std::string> init) : 
     rated_export_power_(stoul(init["rated_export_power"])),
@@ -13,7 +32,7 @@ DistributedEnergyResource::DistributedEnergyResource (
     export_ramp_(stoul(init["rated_export_ramp"])),
     rated_import_power_(stoul(init["rated_import_power"])),
     rated_import_energy_(stoul(init["rated_import_energy"])),
-    import_ramp_(stoul(init["rated_import_power"])),
+    import_ramp_(stoul(init["rated_import_ramp"])),
     idle_losses_(stoul(init["idle_losses"])),
     export_power_(0),
     import_power_(0),
@@ -43,50 +62,45 @@ DistributedEnergyResource::DistributedEnergyResource (
     export_energy_ = rated_export_energy_ * (1 - percent);
 }  // end constructor
 
-// This constructor is to be used by child classes since they will populate
-// properties through device queries
-DistributedEnergyResource::DistributedEnergyResource () : 
-    rated_export_power_(0),
-    rated_export_energy_(0),
-    export_ramp_(0),
-    rated_import_power_(0),
-    rated_import_energy_(0),
-    import_ramp_(0),
-    idle_losses_(0),
-    export_power_(0),
-    import_power_(0),
-    export_watts_(0),
-    import_watts_(0),
-    delta_time_(0),
-    last_utc_(0) {
-    // do nothing
-}  // end constructor
-
 DistributedEnergyResource::~DistributedEnergyResource () {
     //dtor
 }
 
 // Set Export Watts
-// - set the export control property used in the control loop
+// - export watts is used as a control setpoint by ExportPowe and turns import
+// - power off.
 void DistributedEnergyResource::SetExportWatts (unsigned int power) {
     import_watts_ = 0;
     import_power_ = 0;
     if (power > rated_export_power_) {
-        power = rated_export_power_;
+        export_watts_ = rated_export_power_;
+    } else {
+        export_watts_ = power;
     }
-    export_watts_ = power;
 }  // end Set Export Watts
 
 // Set Export Power
-// - to be used by child classes of DER
+// - regulates export power
 void DistributedEnergyResource::SetExportPower (float power) {
-    export_power_ = power;
+    if (power > export_watts_) {
+        export_power_ = export_watts_;
+    } else if (power <= 0) {
+        export_power_ = 0;
+    } else {
+        export_power_ = power;
+    }
 }  // end Set Export Power
 
 // Set Export Energy
-// - to be used by child classes of DER
+// - regulates export energy
 void DistributedEnergyResource::SetExportEnergy (float energy) {
-    export_energy_ = energy;
+    if (energy > rated_export_energy_) {
+        export_energy_ = rated_export_energy_;
+    } else if (energy <= 0) {
+        export_energy_ = 0;
+    } else {
+        export_energy_ = energy;
+    }
 }  // end Set Export Energy
 
 // Set Rated Export Power
@@ -108,26 +122,40 @@ void DistributedEnergyResource::SetExportRamp (unsigned int ramp) {
 }  // end Set Export Ramp
 
 // Set Import Watts
-// - set the import control property used in the control loop
+// - turn off export power and set control setting for ImportPower method
 void DistributedEnergyResource::SetImportWatts (unsigned int power) {
     export_watts_ = 0;
     export_power_ = 0;
     if (power > rated_import_power_) {
-        power = rated_import_power_;
+        import_watts_ = rated_import_power_;
+    } else {
+        import_watts_ = power;
     }
-    import_watts_ = power;
 }  // end Set Import Watts
 
 // Set Import Power
-// - to be used by child classes of DER
+// - regulates import power
 void DistributedEnergyResource::SetImportPower (float power) {
-    import_power_ = power;
+    if (power > import_watts_) {
+        import_power_ = import_watts_;
+    } else if (power <= 0) {
+        import_power_ = 0;
+    } else {
+        import_power_ = power;
+    }
 }  // end Set Import Power
 
 // Set Import Energy
-// - to be used by child classes of DER
+// - regulates import energy balance export energy
 void DistributedEnergyResource::SetImportEnergy (float energy) {
-    import_energy_ = energy;
+    if (energy > rated_import_energy_) {
+        import_energy_ = rated_import_energy_;
+    } else if (energy <= 0) {
+        import_energy_ = 0;
+        import_watts_ = 0;  // stop importing
+    } else {
+        import_energy_ = energy;
+    }
 }  // end Set Import Energy
 
 // Set Rated Import Power
@@ -161,13 +189,13 @@ void DistributedEnergyResource::SetRemoteTime (unsigned int utc) {
 }  // end Set Remote Time
 
 // Set Price
-// - set the watt-hours per hour loss when idle
+// - set the dollars per kilo-watt price for electricity
 void DistributedEnergyResource::SetPrice (float price) {
     price_ = price;
 }  // end Set Idle Losses
 
 // Set Log Path
-// -
+// - set the directory path for log files. It must be a valid path
 void DistributedEnergyResource::SetLogPath (std::string path) {
     log_path_ = path;
 }  // end Set Log Path
@@ -179,7 +207,7 @@ void DistributedEnergyResource::SetLogIncrement (unsigned int inc) {
 }  // end Set Log Increment
 
 // Get Rated Export Power
-// - get the watt value available to export to the grid
+// - get the rated watt value available to export to the grid
 unsigned int DistributedEnergyResource::GetRatedExportPower () {
     return rated_export_power_;
 }  // end Get Rated Export Power
@@ -211,7 +239,7 @@ unsigned int DistributedEnergyResource::GetExportRamp () {
 }  // end Get Export Ramp
 
 // Get Rated Import Power
-// - get the watt value available to import from the grid
+// - get the rated watt value available to import from the grid
 unsigned int DistributedEnergyResource::GetRatedImportPower () {
     return rated_import_power_;
 }  // end Rated Import Power
@@ -267,56 +295,75 @@ float DistributedEnergyResource::GetPrice () {
 }  // end Get Price
 
 // Import Power
-// - called by control loop if import power is set
-// - assume loss is factored into import power
+// - calculate power/energy change 
+// - degrement import energy and increment export energy
 void DistributedEnergyResource::ImportPower () {
-    float seconds = delta_time_ / 1000;
-    float watts = import_ramp_ * seconds;
-
     // regulate import power
-    if (import_power_ + watts < import_watts_) {
-        import_power_ += watts;
-    } else {
-        import_power_ = import_watts_;
+    float seconds = delta_time_ / 1000;
+    float ramp_watts = import_ramp_ * seconds;
+    if (import_power_ == import_watts_){
+        // do nothing
+    } else if (import_power_ < import_watts_) {
+        DistributedEnergyResource::SetImportPower (import_power_ + ramp_watts);
+    } else if (import_power_ > import_watts_) {
+        DistributedEnergyResource::SetImportPower (import_watts_ - ramp_watts);
     }
 
     // regulate energy
     float hours = seconds / (60*60);
-    if (import_energy_ - import_power_ > 0) {
+    float watt_hours = 0;
+
+    // if the import power didn't reach rated then include ramp in energy calc
+    // this function does not account for the cycle where it reaches rated,
+    // but the error is negligable comparted to rated energy
+    if (import_power_ < rated_import_power_) {
         // area under the linear function
-        import_energy_ -= (import_power_*hours + watts*hours/2);
-        export_energy_ = rated_export_energy_ - import_energy_;
+        watt_hours += import_power_ * hours;  // area under triangle
+        watt_hours += ramp_watts * hours/2;   // area of triangle
+        DistributedEnergyResource::SetImportEnergy(import_energy_ - watt_hours);
+        DistributedEnergyResource::SetExportEnergy(export_energy_ + watt_hours);
     } else {
-        import_power_ = 0;
-        import_energy_ = 0;
-        export_energy_ = rated_export_energy_;
+        // area under the linear function excluding ramp.
+        // note: this will exclude some energy if it reached peak within bounds
+        watt_hours += import_power_ * hours;
+        DistributedEnergyResource::SetImportEnergy(import_energy_ - watt_hours);
+        DistributedEnergyResource::SetExportEnergy(export_energy_ + watt_hours);
     }
 }  // end Import Power
 
 // Export Power
-// - called by control loop if export power is set
-// - assume loss is factored into export power
+// - calculate power/energy change 
+// - degrement export energy and increment import energy
 void DistributedEnergyResource::ExportPower () {
     float seconds = delta_time_ / 1000;
-    float watts = export_ramp_ * seconds;
-
-    // regulate import power
-    if (export_power_ + watts < export_watts_) {
-        export_power_ += watts;
-    } else {
-        export_power_ = export_watts_;
+    float ramp_watts = export_ramp_ * seconds;
+    if (export_power_ == export_watts_) {
+        // do nothing
+    } else if (export_power_ < export_watts_) {
+        DistributedEnergyResource::SetExportPower (export_power_ + ramp_watts);
+    } else if (export_power_ > export_watts_) {
+        DistributedEnergyResource::SetExportPower (export_power_ - ramp_watts);
     }
 
     // regulate energy
     float hours = seconds / (60*60);
-    if (export_energy_ - export_power_ > 0) {
+    float watt_hours = 0;
+
+    // if the import power didn't reach rated then include ramp in energy calc
+    // this function does not account for the cycle where it reaches rated,
+    // but the error is negligable comparted to rated energy
+    if (export_power_ < rated_export_power_) {
         // area under the linear function
-        export_energy_ -= (export_power_*hours + watts*hours/2);
-        import_energy_ = rated_import_energy_ - export_energy_;
+        watt_hours += export_power_ * hours;  // area under triangle
+        watt_hours += ramp_watts * hours/2;   // area of triangle
+        DistributedEnergyResource::SetImportEnergy(import_energy_ + watt_hours);
+        DistributedEnergyResource::SetExportEnergy(export_energy_ - watt_hours);
     } else {
-        export_power_ = 0;
-        export_energy_ = 0;
-        import_energy_ = rated_import_energy_;
+        // area under the linear function excluding ramp.
+        // note: this will exclude some energy if it reached peak within bounds
+        watt_hours += export_power_ * hours;
+        DistributedEnergyResource::SetImportEnergy(import_energy_ + watt_hours);
+        DistributedEnergyResource::SetExportEnergy(export_energy_ - watt_hours);
     }
 }  // end Export Power
 
@@ -326,14 +373,8 @@ void DistributedEnergyResource::IdleLoss () {
     float seconds = delta_time_ / 1000;
     float hours = seconds / (60*60);
     float energy_loss = idle_losses_ * hours;
-
-    if (import_energy_ + energy_loss < rated_import_energy_) {
-        import_energy_ += energy_loss;
-    }
-
-    if (export_energy_ - energy_loss > 0) {
-        export_energy_ -= energy_loss;
-    }
+    DistributedEnergyResource::SetImportEnergy(import_energy_ + energy_loss);
+    DistributedEnergyResource::SetExportEnergy(export_energy_ - energy_loss);
 }  // end Idle Loss
 
 // Log
@@ -370,10 +411,11 @@ void DistributedEnergyResource::Loop (float delta_time) {
 // Display
 // - print device properties to terminal
 void DistributedEnergyResource::Display () {
-    std::cout << "Import Control:\t" << import_power_ << "\twatts\n";
-    std::cout << "Import Power:\t" << import_watts_ << "\twatts\n";
-    std::cout << "Import Energy:\t" << import_energy_ << "\twatt-hours\n";
-    std::cout << "Export Control:\t" << export_power_ << "\twatts\n";
-    std::cout << "Export Power:\t" << export_watts_ << "\twatts\n";
-    std::cout << "Export Energy:\t" << export_energy_ << "\twatt-hours\n";
+    std::cout 
+        << "Import Power:\t" << import_power_ << "\twatts\n"
+        << "Import Control:\t" << import_watts_ << "\twatts\n"
+        << "Import Energy:\t" << import_energy_ << "\twatt-hours\n"
+        << "Export Power:\t" << export_power_ << "\twatts\n"
+        << "Export Control:\t" << export_watts_ << "\twatts\n"
+        << "Export Energy:\t" << export_energy_ << "\twatt-hours" << std::endl;
 }  // end Display

@@ -2,7 +2,7 @@
 #include <string>
 #include "include/ServerListener.h"
 
-ServerListener::ServerListener(
+ServerListener::ServerListener (
     ajn::BusAttachment* bus_ptr,
     ajn::Observer* obs_ptr,
     DistributedEnergyResource* der_ptr,

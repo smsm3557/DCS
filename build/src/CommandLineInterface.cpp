@@ -4,24 +4,26 @@
 #include <vector>
 #include "include/CommandLineInterface.h"
 
+bool scheduled;  // this variable is a global from main
+
 CommandLineInterface::CommandLineInterface (
 	DistributedEnergyResource* der_ptr) : der_ptr_(der_ptr) {
-
 }  // end constructor
 
 CommandLineInterface::~CommandLineInterface () {
-
+    // do nothing at this time
 }  // end destructor
 
 // Help
 // - CLI interface description
 void CommandLineInterface::Help () {
-    std::cout << "\n\t[Help Menu]\n\n";
-    std::cout << "> q            quit\n";
-    std::cout << "> h            display help menu\n";
-    std::cout << "> i <watts>    import power\n";
-    std::cout << "> e <watts>    export power\n";
-    std::cout << "> d            display properties\n";
+    std::cout << "\n\t[Help Menu]\n\n"
+        << "> q            quit\n"
+        << "> h            display help menu\n"
+        << "> o <y/n>      operator enable/disable\n"
+        << "> i <watts>    import power\n"
+        << "> e <watts>    export power\n"
+        << "> d            display properties\n";
 } // end Help
 
 // Command Line Interface
@@ -29,6 +31,7 @@ void CommandLineInterface::Help () {
 bool CommandLineInterface::Control (const std::string& input) {
     // check for program argument
     if (input == "") {
+        CommandLineInterface::Help ();
         return false;
     }
     char cmd = input[0];
@@ -47,7 +50,24 @@ bool CommandLineInterface::Control (const std::string& input) {
 
         case 'i': {
             try {
-                der_ptr_->SetImportWatts(stoul(tokens[1]));
+                der_ptr_->SetImportWatts(stoul(tokens.at(1)));
+            } catch (...) {
+                std::cout << "[ERROR]: Invalid Argument.\n";
+                break;
+            }
+            
+            break;
+        }
+
+        case 'o': {
+            try {
+                if (tokens.at(1) == "n") {
+                    scheduled = false;
+                } else if (tokens.at(1) == "y") {
+                    scheduled = true;
+                } else {
+                    throw;
+                }
             } catch(...) {
                 std::cout << "[ERROR]: Invalid Argument.\n";
             }
@@ -56,7 +76,7 @@ bool CommandLineInterface::Control (const std::string& input) {
 
         case 'e': {
             try {
-                der_ptr_->SetExportWatts(stoul(tokens[1]));
+                der_ptr_->SetExportWatts(stoul(tokens.at(1)));
             } catch(...) {
                 std::cout << "[ERROR]: Invalid Argument.\n";
             }

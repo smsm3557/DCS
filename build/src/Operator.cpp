@@ -4,6 +4,7 @@
 #include "include/Operator.h"
 #include "include/tsu.h"
 
+// the constructor reads the given schedule and stores it in memory
 Operator::Operator (const std::string& filename, 
                     DistributedEnergyResource* der_ptr) 
     : index_(0), der_ptr_(der_ptr) {
@@ -20,9 +21,12 @@ Operator::Operator (const std::string& filename,
 }  // end constructor
 
 Operator::~Operator () {
-
+    // do nothing
 }  // end destructor
 
+// Loop
+// - gets the utc time and takes the modulus so the actual day of the scheduel
+// - is neglected.
 void Operator::Loop () {
     // get the current time utc and take modulo to neglect days
     unsigned int seconds_per_day = 60*60*24;

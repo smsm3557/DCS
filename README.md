@@ -10,7 +10,7 @@ mkdir ~/dev ~/src
 ```
 
 ### OpenVPN
-Request <client>.ovpn file link the PSU powerlab google drive. in the commands below replace <path> and <client-name> with the actual path to the ovpn file and the actual ovpn file name. 
+The DCS used OpenVPN to extend AllJoyn's routing capability to the wide area network. It is not an ideal solution, but it is relativly easy to setup and can hand a few hundred clients. Request <client>.ovpn file link the PSU powerlab google drive. in the commands below replace <path> and <client-name> with the actual path to the ovpn file and the actual ovpn file name. 
         
 ``` console
 sudo apt-get update

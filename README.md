@@ -10,7 +10,7 @@ mkdir ~/dev ~/src
 ```
 
 ### OpenVPN
-The DCS used OpenVPN to extend AllJoyn's routing capability to the wide area network. It is not an ideal solution, but it is relativly easy to setup and can hand a few hundred clients. Request <client>.ovpn file link the PSU powerlab google drive. in the commands below replace <path> and <client-name> with the actual path to the ovpn file and the actual ovpn file name. 
+The DCS used OpenVPN to extend AllJoyn's routing capability to the wide area network. It is not an ideal solution, but it is relativly easy to setup and can handle a couple hundred clients. Request <client>.ovpn file link through PSU powerlab google drive. In the commands below replace <path> and <client-name> with the actual path to the ovpn file and the actual ovpn file name. 
         
 ``` console
 sudo apt-get update
@@ -20,7 +20,7 @@ chmod 700 <client-name>.ovpn
 sudo mv <client-name>.ovpn /etc/openvpv
 ```
 
-Note: the current vpn setup does not allow internet access through the vpn and setting up a split-tunnel with AllJoyn is difficult so ensure you have updated all the things you need to update before starting the OpenVPN client.
+Note: the current vpn setup does not allow internet access through the vpn and setting up a split-tunnel with AllJoyn is difficult. Ensure you have updated all the things you need to update before starting the OpenVPN client.
 
 ### AllJoyn
 First clone the AllJoyn repository into your /src folder. The run the following "scons" command that corresponds to your processor. 
@@ -76,12 +76,17 @@ The config file holds the initialization variables for the DCS program.
 -o y/n
 
 ### Run
-
+Open a terminal an start the vpn client.
 ``` console
 sudo openvpn --config /etc/openvpn/<client-name>.ovpn
+```
+
+Next open another therminal and start the dcs.
+``` console
 cd ~/dev/DCS/tools
 ./build-run.sh
 ```
+
 ## Use
 The program can be controlled three ways:
 1. The method handlers built into the "Smart Grid Device" that execute when an AllJoyn method call is recieved.

@@ -323,6 +323,8 @@ int main (int argc, char** argv) {
     }
 
     // when done = true, the program begins the shutdown process
+    // TODO (TS): AllJoyn still leaves alot of errors when closing. The docs
+    // - dont really explain the shutdown procedure for lots of alljoyn objects
 	cout << "Closing program...\n";
 
 	// First join all active threads to main thread
@@ -331,25 +333,30 @@ int main (int argc, char** argv) {
 	OPER.join ();
 	SGD.join ();
 
-    cout << "\tShutting down AllJoyn\n";
-    obs_ptr->UnregisterAllListeners ();
+    cout << "\tUnregistering AllJoyn objects\n";
+    obs_ptr->UnregisterListener (*listner_ptr);
+    bus_ptr->UnregisterBusObject(*sgd_ptr);
+    status = bus_ptr->Stop ();
+    status = bus_ptr->Join ();
 
-    #ifdef ROUTER
-        AllJoynRouterShutdown ();
-    #endif // ROUTER
-
-    AllJoynShutdown ();
-
-	// Then delete all pointers that were created using "new" since they do not
-	// automaticall deconstruct at the end of the program.
+    // Then delete all pointers that were created using "new" since they do not
+    // automaticall deconstruct at the end of the program.
     cout << "\nDeleting pointers...\n";
     delete sgd_ptr;
     delete listner_ptr;
     delete obs_ptr;
     delete about_ptr;
     delete bus_ptr;
-   	delete oper_ptr;
+    delete oper_ptr;
     delete der_ptr;
+
+    #ifdef ROUTER
+        cout << "\tShutting down AllJoyn Router\n";
+        status = AllJoynRouterShutdown ();
+    #endif // ROUTER
+
+    cout << "\tShutting down AllJoyn\n";
+    status = AllJoynShutdown ();
 
     // return exit status
     return 0;

@@ -94,6 +94,8 @@ static std::map <std::string, std::string> ArgumentParser (int argc,
         } else if ((token == "-o")) {
             if ((argument == "y")) {
             	scheduled = true;
+            } else if ((argument == "n")) {
+                scheduled = false;
             } else {
 	        	cout << "[ERROR] : Invalid program argument: " << token << endl;
 	            ProgramHelp(name);
@@ -175,7 +177,7 @@ void SmartGridDeviceLoop (unsigned int sleep, SmartGridDevice* sgd_ptr) {
     auto time_end = chrono::high_resolution_clock::now();
     chrono::duration<double, milli> time_elapsed;
 
-    while (!done && scheduled) {
+    while (!done) {
         time_start = chrono::high_resolution_clock::now();
         sgd_ptr->Loop();
         time_end = chrono::high_resolution_clock::now();

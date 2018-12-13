@@ -57,17 +57,18 @@ public:
     void Loop ();
 
 private:
-    // member properties
+    // class composition
     DistributedEnergyResource* der_ptr_;
     ajn::BusAttachment* bus_ptr_;
+    const ajn::InterfaceDescription::Member* signal_;
+    // alljoyn properties
     const char* interface_;
     const char* name_;
-    const ajn::InterfaceDescription::Member* signal_;
 
     // control properties
     unsigned int last_telemetry_utc_;
-    unsigned int import_watts_;
-    unsigned int export_watts_;
+    float last_import_energy_;
+    float last_export_energy_;
 
 };
 

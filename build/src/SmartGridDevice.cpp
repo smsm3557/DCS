@@ -139,7 +139,7 @@ const char* props[] = { "rated_export_power",
 void SmartGridDevice::Loop () {
     unsigned int utc = time (0);
     bool new_update = (last_telemetry_utc_ != utc);
-    bool five_minutes = (utc % (1*60) == 0);
+    bool five_minutes = (utc % (5*60) == 0);
     bool one_hour = (utc % (60*60) == 0);
 
     float import_energy = der_ptr_->GetImportEnergy ();
@@ -150,7 +150,7 @@ void SmartGridDevice::Loop () {
     bool energy_deviation = (delta_export > 0.1 || delta_import > 0.1);
 
     // every hour send telemetry update
-    if (five_minutes && new_update) {
+    if (one_hour && new_update) {
         QStatus status = SmartGridDevice::SendPropertiesUpdate ();
         std::cout << "Sending telemetry update:\t" << status << std::endl;
         last_telemetry_utc_ = utc;

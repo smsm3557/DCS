@@ -292,11 +292,15 @@ int main (int argc, char** argv) {
     cout << "\tCreating AllJoyn Smart Grid Device\n";
     // ~ reference SmartGridDevice.cpp
     const char* device_name = configs["AllJoyn"]["device_interface"].c_str();
-    const char* path = configs["AllJoyn"]["path"].c_str();
+    string path = configs["AllJoyn"]["path"];
+    string region = "region" + to_string(rand() % 100) + "/";
+    string substation = "substation" + to_string(rand() % 100) + "/";
+    string feeder = "feeder" + to_string(rand() % 100) + "/";
+    path = path + region + substation + feeder + app;
     SmartGridDevice *sgd_ptr = new SmartGridDevice(der_ptr, 
                                                    bus_ptr, 
                                                    device_name, 
-                                                   path);
+                                                   path.c_str());
 
     cout << "\t\tRegistering AllJoyn Smart Grid Device\n";
     if (ER_OK != bus_ptr->RegisterBusObject(*sgd_ptr)){

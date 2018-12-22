@@ -224,13 +224,22 @@ static QStatus BuildServerInterface (std::string name,
 
     std::cout << "\t\tCreating Interface for " << interface_name << std::endl;
 
-
     // properties
     status = interface->AddProperty("time", "u", ajn::PROP_ACCESS_READ);
     assert (status == ER_OK);
 
     status = interface->AddPropertyAnnotation(
         "time",
+        "org.freedesktop.DBus.Property.EmitsChangedSignal",
+        "true"
+    );
+    assert (status == ER_OK);
+
+    status = interface->AddProperty("price", "i", ajn::PROP_ACCESS_READ);
+    assert (status == ER_OK);
+
+    status = interface->AddPropertyAnnotation(
+        "price",
         "org.freedesktop.DBus.Property.EmitsChangedSignal",
         "true"
     );
@@ -303,15 +312,6 @@ static QStatus SetupBusAttachment (tsu::config_map& ini_map,
         return ER_FAIL;
     }
 
-    #ifdef SECURE
-        status = bus_ref.EnablePeerSecurity(
-            ECDHE_KEYX,
-            new ECDHEKeyXListener(),
-            ".alljoyn_keystore/custEV_ecdhe.ks",
-            false
-        );
-        assert (status == ER_OK);
-    #endif //SECURE
     return status;
 } // end SetupBusAttachment
 

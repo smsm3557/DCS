@@ -67,8 +67,8 @@ private:
 
     // control properties
     unsigned int last_telemetry_utc_;
-    float last_import_energy_;
-    float last_export_energy_;
+    unsigned int last_import_energy_;
+    unsigned int last_export_energy_;
 
 };
 

@@ -2,6 +2,8 @@
 #include <string>
 #include "include/ServerListener.h"
 
+const char* ServerListener::props[] = {"time", "price"};
+
 ServerListener::ServerListener (
     ajn::BusAttachment* bus_ptr,
     ajn::Observer* obs_ptr,
@@ -14,7 +16,7 @@ ServerListener::ServerListener (
                                price_(0) {
 } // end ServerListener
 
-const char* ServerListener::props[] = {"EMSName", "Time", "price"};
+
 
 // ObjectDiscovered
 // - a remote device has advertised the interface we are looking for
@@ -23,7 +25,7 @@ void ServerListener::ObjectDiscovered (ajn::ProxyBusObject& proxy) {
     std::printf("[LISTENER] : %s has been discovered\n", name);
     bus_ptr_->EnableConcurrentCallbacks();
     proxy.RegisterPropertiesChangedListener(
-        server_interface_, props, 3, *this, NULL
+        server_interface_, props, 2, *this, NULL
     );
 } // end ObjectDiscovered
 
@@ -43,6 +45,7 @@ void ServerListener::PropertiesChanged (ajn::ProxyBusObject& obj,
                                                 const ajn::MsgArg& changed,
                                                 const ajn::MsgArg& invalidated,
                                                 void* context) {
+    std::cout << "DERAS: prop change" << std::endl;
     size_t nelem = 0;
     ajn::MsgArg* elems = NULL;
     QStatus status = changed.Get("a{sv}", &nelem, &elems);
@@ -54,12 +57,12 @@ void ServerListener::PropertiesChanged (ajn::ProxyBusObject& obj,
             if (status == ER_OK) {
                 if (!strcmp(name,"price")) {
                     status = val->Get("i", &price_);
-
-                    // the price is in tenths of a cent when delivered
-                    float price = price_/10;
+                    float price = (float)price_/10;  // tenths of cent per watt-hour
+                    std::cout << price_ << std::endl;
                     der_ptr_->SetPrice(price);
-                } else if (!strcmp(name,"Time")) {
+                } else if (!strcmp(name,"time")) {
                     status = val->Get("u", &time_);
+                    std::cout << time_ << std::endl;
                     der_ptr_->SetRemoteTime(time_);
                 }
             } else {

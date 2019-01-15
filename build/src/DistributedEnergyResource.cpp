@@ -417,5 +417,6 @@ void DistributedEnergyResource::Display () {
         << "Import Energy:\t" << import_energy_ << "\twatt-hours\n"
         << "Export Power:\t" << export_power_ << "\twatts\n"
         << "Export Control:\t" << export_watts_ << "\twatts\n"
-        << "Export Energy:\t" << export_energy_ << "\twatt-hours" << std::endl;
+        << "Export Energy:\t" << export_energy_ << "\twatt-hours\n" 
+        << "Power Price:\t" << price_ << "\tcents/watt-hours\n" << std::endl;
 }  // end Display

@@ -27,38 +27,36 @@
         <symbol id="STRING_16">15</symbol>
       </point>
       <point id="fault_code" offset="9" type="bitfield16" >
-        <symbol id="NORMAL">0</symbol>
-        <symbol id="STRING_COMMS">1</symbol>
-        <symbol id="MODULE_COMMS">2</symbol>
-        <symbol id="GROUND_FAULT">3</symbol>
-        <symbol id="OUT_OF_BALANCE">4</symbol>
-        <symbol id="OVER_VOLTAGE">5</symbol>
-        <symbol id="UNDER_VOLTAGE">6</symbol>
-        <symbol id="OVER_TEMPERATURE">7</symbol>
-        <symbol id="UNDER_TEMPERATURE">8</symbol>
-        <symbol id="OVER_CURRENT">9</symbol>
-        <symbol id="CONTACTOR_FAIL">10</symbol>
-        <symbol id="FUSE_FAULT">11</symbol>
+        <symbol id="STRING_COMMS">0</symbol>
+        <symbol id="MODULE_COMMS">1</symbol>
+        <symbol id="GROUND_FAULT">2</symbol>
+        <symbol id="OUT_OF_BALANCE">3</symbol>
+        <symbol id="OVER_VOLTAGE">4</symbol>
+        <symbol id="UNDER_VOLTAGE">5</symbol>
+        <symbol id="OVER_TEMPERATURE">6</symbol>
+        <symbol id="UNDER_TEMPERATURE">7</symbol>
+        <symbol id="OVER_CURRENT">8</symbol>
+        <symbol id="CONTACTOR_FAIL">9</symbol>
+        <symbol id="FUSE_FAULT">10</symbol>
       </point>
       <point id="warning_code" offset="10" type="bitfield16" >
-        <symbol id="NORMAL">0</symbol>
-        <symbol id="STRING_COMMS">1</symbol>
-        <symbol id="MODULE_COMMS">2</symbol>
-        <symbol id="GROUND_FAULT">3</symbol>
-        <symbol id="OUT_OF_BALANCE">4</symbol>
-        <symbol id="OVER_VOLTAGE">5</symbol>
-        <symbol id="UNDER_VOLTAGE">6</symbol>
-        <symbol id="OVER_TEMPERATURE">7</symbol>
-        <symbol id="UNDER_TEMPERATURE">8</symbol>
-        <symbol id="OVER_CURRENT">9</symbol>
-        <symbol id="CONTACTOR_FAIL">10</symbol>
-        <symbol id="FUSE_FAULT">11</symbol>
+        <symbol id="STRING_COMMS">0</symbol>
+        <symbol id="MODULE_COMMS">1</symbol>
+        <symbol id="GROUND_FAULT">2</symbol>
+        <symbol id="OUT_OF_BALANCE">3</symbol>
+        <symbol id="OVER_VOLTAGE">4</symbol>
+        <symbol id="UNDER_VOLTAGE">5</symbol>
+        <symbol id="OVER_TEMPERATURE">6</symbol>
+        <symbol id="UNDER_TEMPERATURE">7</symbol>
+        <symbol id="OVER_CURRENT">8</symbol>
+        <symbol id="CONTACTOR_FAIL">9</symbol>
+        <symbol id="FUSE_FAULT">10</symbol>
       </point>
-      <point id="soc" offset="11" type="uint16" sf="0.1" />
+      <point id="soc" offset="11" type="int16" sf="0.1" />
       <point id="soh" offset="12" type="int16" sf="0.1" />
-      <point id="dc_volts" offset="13" type="int16" sf="0.01526" />
-      <point id="dc_current" offset="14" type="uint16" sf="0.01526" />
-      <point id="charge_current_limit" offset="15" type="int16" sf="0.01526" />
+      <point id="dc_volts" offset="13" type="uint16" sf="0.01526" />
+      <point id="dc_current" offset="14" type="int16" sf="0.0305" />
+      <point id="charge_current_limit" offset="15" type="uint16" sf="0.01526" />
       <point id="discharge_current_limit" offset="16" type="uint16" sf="0.01526" />
       <point id="charge_power_limit" offset="17" type="uint16" sf="0.01526" />
       <point id="discharge_power_limit" offset="18" type="uint16" sf="0.01526" />
@@ -78,11 +76,10 @@
       <point id="kwhr_charge_lsb" offset="32" type="uint16" />
       <point id="kwhr_discharge_msb" offset="33" type="uint16" />
       <point id="kwhr_discharge_lsb" offset="34" type="uint16" />
-      <point id="charge_voltage_limit" offset="35" type="uint16" />
-      <point id="discharge_voltage_limit" offset="36" type="uint16" />
+      <point id="charge_voltage_limit" offset="35" type="uint16" sf="0.01526" />
+      <point id="discharge_voltage_limit" offset="36" type="uint16" sf="0.01526" />
       <point id="soc_cc" offset="37" type="int16" />
       <point id="soc_pc" offset="38" type="int16" />
-      <point id="pad_1" offset="39" type="pad" />
     </block>
   </model>
   <strings id="64201" locale="en">

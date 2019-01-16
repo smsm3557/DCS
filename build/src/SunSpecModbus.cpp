@@ -67,19 +67,24 @@ void SunSpecModbus::Query (unsigned int did) {
                 new SunSpecModel (did_and_length[0], id_offset, filepath)
             );
             models_.push_back (std::move (model));
-            SunSpecModbus::ReadBlock(did_and_length[0]);  // update sunssf
+            std::map <std::string, std::string> block 
+                = SunSpecModbus::ReadBlock(did_and_length[0]);  // update sunssf
             id_offset += did_and_length[1] + 2; // block length not model length
             SunSpecModbus::ReadRegisters(id_offset, 2, did_and_length);
+            SunSpecModbus::PrintBlock (block);
             filepath = SunSpecModbus::FormatModelPath (did_and_length[0]);
         }
 
     } else {
-        id_offset += 2;
+        id_offset = 0;  // since the bms is the only not sunspec device 
         std::string filepath = SunSpecModbus::FormatModelPath (did);
         std::shared_ptr <SunSpecModel> model (
             new SunSpecModel (did, id_offset, filepath)
         );
         models_.push_back (std::move (model));
+        std::map <std::string, std::string> block 
+            = SunSpecModbus::ReadBlock(did);  // update sunssf
+        SunSpecModbus::PrintBlock (block);
     }
 
 }

@@ -28,18 +28,24 @@ class BatteryEnergyStorageSystem : public DistributedEnergyResource {
         void ExportPower ();
         void IdleLoss ();
         void Log ();
+        void GetRatedProperties ();
         void Query ();
-        void SetChargeProfile ();
+        void SetRadianConfigurations ();
         void SetDischargeProfile ();
         void CheckBMSErrors (block_map& block);
         void CheckRadianErrors (block_map& block);
 
     private:
+        // static properties
+        unsigned int split_vac_;
         // dynamic properties
         std::string bms_faults_;
         std::string bms_warnings_;
         std::string radian_faults_;
         std::string radian_warnings_;
+        std::string radian_mode_;
+        unsigned int last_log_;
+        unsigned int last_control_;
 
 };
 

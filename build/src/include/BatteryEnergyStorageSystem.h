@@ -30,6 +30,17 @@ class BatteryEnergyStorageSystem : public DistributedEnergyResource {
         void Log ();
         void Query ();
         void SetChargeProfile ();
+        void SetDischargeProfile ();
+        void CheckBMSErrors (block_map& block);
+        void CheckRadianErrors (block_map& block);
+
+    private:
+        // dynamic properties
+        std::string bms_faults_;
+        std::string bms_warnings_;
+        std::string radian_faults_;
+        std::string radian_warnings_;
+
 };
 
 #endif // BATTERYENERGYSTORAGESYSTEM_H_INCLUDED

@@ -22,7 +22,7 @@ SunSpecModbus::SunSpecModbus (std::map <std::string, std::string>& configs)
 
     // set the modbus timeout to a 1/4 second since we can have issues with
     // sequential modbus writes.
-    if (modbus_set_response_timeout(context_ptr_, 0, 250000); == -1) {
+    if (modbus_set_response_timeout(context_ptr_, 0, 999999) == -1) {
         std::cout << "[ERROR] : " << modbus_strerror(errno) << '\n';
     }
     
@@ -105,7 +105,7 @@ void SunSpecModbus::Query (unsigned int did) {
 // - modbus method call can operate on them.
 void SunSpecModbus::ReadRegisters (unsigned int offset,
                                    unsigned int length,
-                                   uint16_t *reg_ptr) {
+                                   uint16_t* reg_ptr) {
     unsigned int reg_left = length;
     unsigned int new_offset = offset;
     int status;
@@ -174,20 +174,21 @@ void SunSpecModbus::ReadRegisters (unsigned int offset,
 // - the registers to write are passed by reference to reduce memory
 void SunSpecModbus::WriteRegisters (unsigned int offset,
                                     unsigned int length,
-                                    const uint16_t *reg_ptr) {
-    int status = modbus_write_registers (
-        context_ptr_, offset, length, reg_ptr
-    );
+                                    std::vector <uint16_t>& registers) {
+    int status;
+    int value;
+    for (unsigned int i = 0; i < registers.size(); i++) {
+        value = registers[i];
+        std::cout << value << std::endl;
+        status = modbus_write_register (
+            context_ptr_, offset, value
+        );
 
-    if (status == -1) {
-        std::cout << "[ERROR]\t"
-            << "Write Registers: " << modbus_strerror(errno) << '\n';
-        status = modbus_flush(context_ptr_);
         if (status == -1) {
             std::cout << "[ERROR]\t"
-                << "Modbus Flush: " << modbus_strerror(errno) << '\n';
-            modbus_flush(context_ptr_);
+                << "Write Registers: " << modbus_strerror(errno) << '\n';
         }
+        offset++;
     }
 }
 
@@ -214,15 +215,6 @@ void SunSpecModbus::WriteBlock (unsigned int did,
                                 std::map <std::string, std::string>& points) {
     for (const auto model : models_) {
         if (*model == did) {
-            // read register block
-            unsigned int offset = model->GetOffset ();
-            unsigned int length = model->GetLength ();
-            std::vector <uint16_t> block = model->PointsToBlock (points);
-
-            // convert vector to array for writing to modbus registers
-            uint16_t* raw = block.data();
-            SunSpecModbus::WriteRegisters(offset, length, raw);
-            return;
         }
     }
     std::cout << "[ERROR]\t" << "Write Block: model not found\n";
@@ -240,14 +232,7 @@ void SunSpecModbus::WritePoint (unsigned int did,
             unsigned int offset = registers[0];
             unsigned int length = registers[1];
             registers.erase (registers.begin(), registers.begin()+2);
-
-            std::cout << "WritePoint: " << offset << ", " << length << '\n';
-            for (const auto& reg : registers) {
-                std::cout << "\t" << reg << '\n';
-            }
-            //convert vector to array for writing to modbus registers
-            uint16_t* raw = registers.data();
-            SunSpecModbus::WriteRegisters(offset, length, raw);
+            SunSpecModbus::WriteRegisters(offset, length, registers);
             return;
         }
     }

@@ -19,7 +19,7 @@ public:
                         uint16_t *reg_ptr);
     void WriteRegisters (unsigned int offset,
                          unsigned int length,
-                         const uint16_t *reg_ptr);
+                         std::vector <uint16_t>& registers);
 
     std::map <std::string, std::string> ReadBlock (unsigned int did);
 

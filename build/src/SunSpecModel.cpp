@@ -454,12 +454,12 @@ std::vector <uint16_t> SunSpecModel::PointToRegisters (
                     std::string label = subsubtree.first;
                     if ( label != "<xmlattr>" ) {
                         pt::ptree symbol = subsubtree.second;
-                        std::string value = symbol.data();
-                        if (value == point[id]) {
-                            std::string attr = symbol.get <std::string> (
-                                "<xmlattr>.id",""
-                            );
-                            uint16_t value = std::stoul(attr);
+                        std::string attr = symbol.get <std::string> (
+                            "<xmlattr>.id",""
+                        );
+                        if (attr == point[id]) {
+                            uint16_t value = std::stoul(symbol.data());
+                            std::cout << attr << ": " << value << std::endl;
                             std::vector <uint16_t> registers = {index,1,value};
                             return registers;
                         }
@@ -471,12 +471,12 @@ std::vector <uint16_t> SunSpecModel::PointToRegisters (
                     std::string label = subsubtree.first;
                     if ( label != "<xmlattr>" ) {
                         pt::ptree symbol = subsubtree.second;
-                        std::string value = symbol.data();
-                        if (value == point[id]) {
-                            std::string attr = symbol.get <std::string> (
-                                "<xmlattr>.id",""
-                            );
-                            uint32_t value = std::stoul(attr);
+                        std::string attr = symbol.get <std::string> (
+                            "<xmlattr>.id",""
+                        );
+                        if (attr == point[id]) {
+                            uint32_t value = std::stoul(symbol.data());
+                            std::cout << attr << ": " << value << std::endl;
                             std::vector <uint16_t> registers = {index,2,value};
                             SunSpecModel::SetUINT32(&registers, 2, value);
                             return registers;

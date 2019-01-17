@@ -7,7 +7,9 @@
 BatteryEnergyStorageSystem::BatteryEnergyStorageSystem (
 	tsu::config_map& map) : 
 	inverter_(map["Radian"]),
-	bms_(map["BMS"]) {
+	bms_(map["BMS"]),
+	last_control_(0),
+	last_log_(0) {
 	// start constructor
 	SetLogPath (map["BESS"]["log_path"]);
 	SetLogIncrement (stoul(map["BESS"]["log_inc"]));
@@ -27,7 +29,7 @@ void BatteryEnergyStorageSystem::Loop (float delta_time){
 	unsigned int utc = time (0);
 	bool five_seconds = (utc % 5 == 0);
 	bool one_minute = (utc % 60 == 0);
-	if (five_seconds) {
+	if (five_seconds && utc != last_control_) {
 		last_control_ = utc;
 		BatteryEnergyStorageSystem::Query ();
 		if (GetImportWatts () > 0) {
@@ -38,7 +40,7 @@ void BatteryEnergyStorageSystem::Loop (float delta_time){
 			//BatteryEnergyStorageSystem::Idleloss ();
 		}
 	}
-	if (one_minute) {
+	if (one_minute && utc != last_log_) {
 		last_log_ = utc;
 		BatteryEnergyStorageSystem::Log ();
 	}
@@ -56,9 +58,13 @@ void BatteryEnergyStorageSystem::ImportPower () {
 			= "BULK_AND_FLOAT_CHARGING_ENABLED";
 		inverter_.WritePoint (64116, point);
 		point.clear();
-		point ["GSconfig_Sell_Volts"] 
-			= "60";
+
+		point ["GSconfig_Sell_Volts"] = "60";
 		inverter_.WritePoint (64116, point);
+		point.clear();
+
+		point ["OB_Bulk_Charge_Enable_Disable"] = "START_BULK";
+		inverter_.WritePoint (64120, point);
 		point.clear();
 	}
 
@@ -83,7 +89,7 @@ void BatteryEnergyStorageSystem::ExportPower () {
 		point.clear();
 
 		point ["GSconfig_Sell_Volts"] 
-			= "40";
+			= "42";
 		inverter_.WritePoint (64116, point);
 		point.clear();
 	}
@@ -251,7 +257,7 @@ void BatteryEnergyStorageSystem::SetRadianConfigurations () {
 	inverter_.WritePoint (64116, point);
 	point.clear();
 
-	point ["GSconfig_Charger_AC_Input_Current_Limit"] = "500";
+	point ["GSconfig_Charger_AC_Input_Current_Limit"] = "50";
 	inverter_.WritePoint (64116, point);
 	point.clear();
 

@@ -7,6 +7,10 @@
 #include "SunSpecModbus.h"
 #include "tsu.h"
 
+// map <property, value>>
+// since i will use alot of string maps I created and alias
+typedef std::map <std::string, std::string> block_map;
+
 class BatteryEnergyStorageSystem : public DistributedEnergyResource {
     public:
         // constructor / destructor
@@ -41,8 +45,7 @@ class BatteryEnergyStorageSystem : public DistributedEnergyResource {
         // dynamic properties
         std::string bms_faults_;
         std::string bms_warnings_;
-        std::string radian_faults_;
-        std::string radian_warnings_;
+        std::string radian_events_;
         std::string radian_mode_;
         unsigned int last_log_;
         unsigned int last_control_;

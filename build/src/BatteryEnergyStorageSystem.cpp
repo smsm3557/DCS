@@ -4,17 +4,13 @@
 #include "include/BatteryEnergyStorageSystem.h"
 #include "include/logger.h"
 
-// map <property, value>>
-// since i will use alot of string maps I created and alias
-typedef std::map <std::string, std::string> block_map;
-
 BatteryEnergyStorageSystem::BatteryEnergyStorageSystem (
 	tsu::config_map& map) : 
 	inverter_(map["Radian"]),
 	bms_(map["BMS"]) {
 	// start constructor
-	SetLogPath (config_map["BESS"]["log_path"]);
-	SetLogIncrement (config_map["log_inc"]);
+	SetLogPath (map["BESS"]["log_path"]);
+	SetLogIncrement (stoul(map["BESS"]["log_inc"]));
 
 	// set rated properties and query for dynamic properties
 	BatteryEnergyStorageSystem::GetRatedProperties ();
@@ -27,7 +23,7 @@ BatteryEnergyStorageSystem::~BatteryEnergyStorageSystem () {
 };
 
 void BatteryEnergyStorageSystem::Loop (float delta_time){
-	void(delta_time);  // not used in this function for now
+	(void)delta_time;  // not used in this function for now
 	unsigned int utc = time (0);
 	bool five_seconds = (utc % 5 == 0);
 	bool one_minute = (utc % 60 == 0);
@@ -39,7 +35,7 @@ void BatteryEnergyStorageSystem::Loop (float delta_time){
 		} else if (GetExportWatts () > 0) {
 			BatteryEnergyStorageSystem::ExportPower ();
 		} else {
-			BatteryEnergyStorageSystem::Idle ();
+			//BatteryEnergyStorageSystem::Idleloss ();
 		}
 	}
 	if (one_minute) {
@@ -71,7 +67,7 @@ void BatteryEnergyStorageSystem::ImportPower () {
 	if (real_watts > 1.1*control_watts || real_watts < 0.9*control_watts) {
 		float current_limit = GetImportWatts () / split_vac_;
 		point ["GSconfig_Charger_AC_Input_Current_Limit"] 
-			= to_string (current_limit);
+			= std::to_string (current_limit);
 		inverter_.WritePoint (64116, point);
 		point.clear();
 	}
@@ -97,13 +93,13 @@ void BatteryEnergyStorageSystem::ExportPower () {
 	if (real_watts > 1.1*control_watts || real_watts < 0.9*control_watts) {
 		float current_limit = GetImportWatts () / split_vac_;
 		point ["OB_Set_Radian_Inverter_Sell_Current_Limit"] 
-			= to_string (current_limit);
+			= std::to_string (current_limit);
 		inverter_.WritePoint (64120, point);
 		point.clear();
 	}
 };
 
-void BatteryEnergyStorageSystem::Idleloss (){
+void BatteryEnergyStorageSystem::IdleLoss (){
 	block_map point;
 	if (radian_mode_ == "CHARGING" || radian_mode_ == "SELLING") {
 		// each point must be created, written, then cleared
@@ -294,7 +290,7 @@ void BatteryEnergyStorageSystem::CheckBMSErrors (block_map& block) {
 // - same the do not log again.
 void BatteryEnergyStorageSystem::CheckRadianErrors (block_map& block) {
 	if (block["Evt1"] != radian_events_) {
-		radian_errors_ = block["Evt1"];
-		Logger ("ERROR", GetLogPath ()) << "Radian Event:" << radian_events_
+		radian_events_ = block["Evt1"];
+		Logger ("ERROR", GetLogPath ()) << "Radian Event:" << radian_events_;
 	}
 };  // end Check Radian Errors

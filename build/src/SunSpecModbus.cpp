@@ -15,6 +15,17 @@ SunSpecModbus::SunSpecModbus (std::map <std::string, std::string>& configs)
         std::cout << "[ERROR] : " << modbus_strerror(errno) << '\n';
     }
 
+    uint32_t sec;
+    uint32_t usec;
+    modbus_get_response_timeout(context_ptr_, &sec, &usec);
+    std::cout << "MB old timeout: " << sec << "." << usec << std::endl;
+
+    // set the modbus timeout to a 1/4 second since we can have issues with
+    // sequential modbus writes.
+    if (modbus_set_response_timeout(context_ptr_, 0, 250000); == -1) {
+        std::cout << "[ERROR] : " << modbus_strerror(errno) << '\n';
+    }
+    
     unsigned int did = stoul(configs["did"]);
     SunSpecModbus::Query (did);
 }

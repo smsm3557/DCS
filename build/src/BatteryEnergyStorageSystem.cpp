@@ -116,7 +116,14 @@ void BatteryEnergyStorageSystem::IdleLoss (){
 };
 
 void BatteryEnergyStorageSystem::Log () {
-
+	Logger ("DATA", GetLogPath ()) 
+		<< "E: W, P, E, I: W, P, E"
+		<< GetExportWatts ()
+		<< GetExportPower ()
+		<< GetRatedExportEnergy ()
+		<< GetImportWatts ()
+		<< GetImportPower ()
+		<< GetRatedImportEnergy ();
 };
 
 // Get Rated Properties

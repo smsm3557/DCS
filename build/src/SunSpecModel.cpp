@@ -449,9 +449,40 @@ std::vector <uint16_t> SunSpecModel::PointToRegisters (
                 SunSpecModel::SetUINT32(&registers, 2, value);
                 return registers;
             } else if (type == "enum16") {
-                //TODO (TS): I don't believe these values can be written to
+                BOOST_FOREACH (pt::ptree::value_type const& subsubtree,
+                               subtree.get_child("")){
+                    std::string label = subsubtree.first;
+                    if ( label != "<xmlattr>" ) {
+                        pt::ptree symbol = subsubtree.second;
+                        std::string value = symbol.data();
+                        if (value == point[id]) {
+                            std::string attr = symbol.get <std::string> (
+                                "<xmlattr>.id",""
+                            );
+                            uint16_t value = std::stoul(attr);
+                            std::vector <uint16_t> registers = {index,1,value};
+                            return registers;
+                        }
+                    }
+                }
             } else if (type == "enum32") {
-                //TODO (TS): I don't believe these values can be written to
+                BOOST_FOREACH (pt::ptree::value_type const& subsubtree,
+                               subtree.get_child("")){
+                    std::string label = subsubtree.first;
+                    if ( label != "<xmlattr>" ) {
+                        pt::ptree symbol = subsubtree.second;
+                        std::string value = symbol.data();
+                        if (value == point[id]) {
+                            std::string attr = symbol.get <std::string> (
+                                "<xmlattr>.id",""
+                            );
+                            uint32_t value = std::stoul(attr);
+                            std::vector <uint16_t> registers = {index,2,value};
+                            SunSpecModel::SetUINT32(&registers, 2, value);
+                            return registers;
+                        }
+                    }
+                }
             } else if (type == "bitfield16") {
                 //TODO (TS): I don't believe these values can be written to
             } else if (type == "bitfield32") {
@@ -552,8 +583,8 @@ void SunSpecModel::SetUINT32 (std::vector <uint16_t>* block,
                               const unsigned int index,
                               const uint32_t value) {
     std::vector <uint16_t>& deref_block = *block;
-    deref_block[index] = static_cast <uint16_t> (value >> 16);
-    deref_block[index+1] = static_cast <uint16_t> (value);
+    deref_block[index+1] = static_cast <uint16_t> (value >> 16);
+    deref_block[index] = static_cast <uint16_t> (value);
 };
 
 
@@ -561,9 +592,9 @@ void SunSpecModel::SetUINT64 (std::vector <uint16_t>* block,
                               const unsigned int index,
                               const uint64_t value) {
     std::vector <uint16_t>& deref_block = *block;
-    deref_block[index] = static_cast <uint16_t> (value >> 48);
-    deref_block[index+1] = static_cast <uint16_t> (value >> 32);
-    deref_block[index+2] = static_cast <uint16_t> (value >> 16);
-    deref_block[index+3] = static_cast <uint16_t> (value);
+    deref_block[index+3] = static_cast <uint16_t> (value >> 48);
+    deref_block[index+2] = static_cast <uint16_t> (value >> 32);
+    deref_block[index+1] = static_cast <uint16_t> (value >> 16);
+    deref_block[index] = static_cast <uint16_t> (value);
 };
 

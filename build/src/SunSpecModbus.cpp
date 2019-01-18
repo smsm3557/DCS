@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <unistd.h>
 #include <sys/stat.h>
 #include "include/SunSpecModbus.h"
 
@@ -84,6 +85,7 @@ void SunSpecModbus::Query (unsigned int did) {
             SunSpecModbus::ReadRegisters(id_offset, 2, did_and_length);
             SunSpecModbus::PrintBlock (block);
             filepath = SunSpecModbus::FormatModelPath (did_and_length[0]);
+            usleep(1000000);
         }
 
     } else {
@@ -137,6 +139,8 @@ void SunSpecModbus::ReadRegisters (unsigned int offset,
             std::end(a_block), std::begin(b_block), std::end(b_block)
         );
 
+
+
         // decrement registers left to read and increment offset to read the
         // next block of registers
         reg_left -= 100;
@@ -174,19 +178,17 @@ void SunSpecModbus::ReadRegisters (unsigned int offset,
 // - the registers to write are passed by reference to reduce memory
 void SunSpecModbus::WriteRegisters (unsigned int offset,
                                     unsigned int length,
-                                    std::vector <uint16_t>& registers) {
+                                    std::vector <uint16_t> registers) {
     int status;
-    int value;
-    for (unsigned int i = 0; i < registers.size(); i++) {
-        value = registers[i];
-        std::cout << value << std::endl;
-        status = modbus_write_register (
-            context_ptr_, offset, value
-        );
+    for (const auto& reg : registers) {
+        std::cout << "MB Write: " << offset << " , " << reg << std::endl;
+        status = modbus_write_register (context_ptr_, offset, reg);
 
         if (status == -1) {
             std::cout << "[ERROR]\t"
                 << "Write Registers: " << modbus_strerror(errno) << '\n';
+            usleep(500000);
+            modbus_flush(context_ptr_);
         }
         offset++;
     }

@@ -21,7 +21,7 @@
 	  <point id="GS_Split_L2_Grid_Input_AC_Voltage" offset="16" type="int16" sf="GS_Split_AC_Voltage_SF" />
 	  <point id="GS_Split_L2_Gen_Input_AC_Voltage" offset="17" type="int16" sf="GS_Split_AC_Voltage_SF" />
 	  <point id="GS_Split_L2_Output_AC_Voltage" offset="18" type="int16" sf="GS_Split_AC_Voltage_SF" />
-	  <point id="GS_Split_Inverter_Operating_mode" offset="19" type="enum16" />
+	  <point id="GS_Split_Inverter_Operating_mode" offset="19" type="enum16" >
 	    <symbol id="OFF">0</symbol>
         <symbol id="SEARCHING">1</symbol>
         <symbol id="INVERTING">2</symbol>
@@ -34,7 +34,8 @@
         <symbol id="SELLING">9</symbol>
         <symbol id="PASS_THROUGH">10</symbol>
         <symbol id="OFFSETTING">14</symbol>
-	  <point id="GS_Split_Error_Flags" offset="20" type="bitfield16" />
+      </point>
+	  <point id="GS_Split_Error_Flags" offset="20" type="bitfield16" >
 	    <symbol id="LOW_AC_OUTPUT_VOLTAGE">0</symbol>
         <symbol id="STACKING_ERROR">1</symbol>
         <symbol id="OVER_TEMPERATURE_ERROR">2</symbol>
@@ -43,7 +44,8 @@
         <symbol id="HIGH_BATTERY_VOLTAGE">5</symbol>
         <symbol id="AC_OUTPUT_SHORTED">6</symbol>
         <symbol id="AC_BACKFEED">7</symbol>
-	  <point id="GS_Split_Warning_Flags" offset="21" type="bitfield16" />
+      </point>
+	  <point id="GS_Split_Warning_Flags" offset="21" type="bitfield16" >
 	    <symbol id="AC_INPUT_FREQUENCY_TOO_HIGH">0</symbol>
         <symbol id="AC_INPUT_FREQUENCY_TOO_LOW">1</symbol>
         <symbol id="AC_INPUT_VOLTAGE_TOO_LOW">2</symbol>
@@ -52,14 +54,17 @@
         <symbol id="TEMPERATURE_SENSOR_BAD">5</symbol>
         <symbol id="COMMUNICATIONS_ERROR">6</symbol>
         <symbol id="COOLING_FAN_FAULT">7</symbol>
+      </point>
 	  <point id="GS_Split_Battery_Voltage" offset="22" type="int16" sf="GS_Split_DC_Voltage_SF" />
 	  <point id="GS_Split_Temp_Compensated_Target_Voltage" offset="23" type="int16" sf="GS_Split_DC_Voltage_SF" />
-	  <point id="GS_Split_AUX_Output_State" offset="24" type="enum16" />
+	  <point id="GS_Split_AUX_Output_State" offset="24" type="enum16" >
 	    <symbol id="DISABLED">0</symbol>
         <symbol id="ENABLED">1</symbol>
-	  <point id="GS_Split_AUX_Relay_Output_State" offset="25" type="enum16" />
+      </point>
+	  <point id="GS_Split_AUX_Relay_Output_State" offset="25" type="enum16" >
 	    <symbol id="DISABLED">0</symbol>
         <symbol id="ENABLED">1</symbol>
+      </point>
 	  <point id="GS_Split_L_Module_Transformer_Temperature" offset="26" type="int16" />
 	  <point id="GS_Split_L_Module_Capacitor_Temperature" offset="27" type="int16" />
 	  <point id="GS_Split_L_Module_FET_Temperature" offset="28" type="int16" />
@@ -67,17 +72,19 @@
 	  <point id="GS_Split_R_Module_Capacitor_Temperature" offset="30" type="int16" />
 	  <point id="GS_Split_R_Module_FET_Temperature" offset="31" type="int16" />
 	  <point id="GS_Split_Battery_Temperature" offset="32" type="int16" />
-	  <point id="GS_Split_AC_Input_Selection" offset="33" type="enum16" />
+	  <point id="GS_Split_AC_Input_Selection" offset="33" type="enum16" >
 	    <symbol id="GRID">0</symbol>
         <symbol id="GEN">1</symbol>
+      </point>
 	  <point id="GS_Split_AC_Input_Frequency" offset="34" type="int16" sf="GS_Split_AC_Frequency_SF" />
 	  <point id="GS_Split_AC_Input_Voltage" offset="35" type="int16" sf="GS_Split_AC_Voltage_SF" />
-	  <point id="GS_Split_AC_Input_State" offset="36" type="enum16" />
+	  <point id="GS_Split_AC_Input_State" offset="36" type="enum16" >
 	    <symbol id="AC_USE">0</symbol>
         <symbol id="AC_DROP">1</symbol>
+      </point>
 	  <point id="GS_Split_Minimum_AC_Input_Voltage" offset="37" type="int16" sf="GS_Split_AC_Voltage_SF" />
 	  <point id="GS_Split_Maximum_AC_Input_Voltage" offset="38" type="int16" sf="GS_Split_AC_Voltage_SF" />
-	  <point id="GS_Split_Sell_Status" offset="39" type="bitfield16" />
+	  <point id="GS_Split_Sell_Status" offset="39" type="bitfield16" >
 	    <symbol id="AC_INPUT_FREQUENCY_TOO_HIGH">0</symbol>
         <symbol id="AC_INPUT_FREQNCY_TOO_LOW">1</symbol>
         <symbol id="AC_INPUT_VOLTAGE_TOO_LOW">2</symbol>
@@ -85,6 +92,7 @@
         <symbol id="AWAITING_SELL_DELAY">4</symbol>
         <symbol id="SELL_DISABLED">5</symbol>
         <symbol id="BATTERY_VOLTAGE_LESS_THAN_TARGET">6</symbol>
+      </point>
       <point id="GS_Split_KWh_SF" offset="40" type="sunssf" mandatory="true" />
 	  <point id="GS_Split_AC1_L1_Buy_kWh" offset="41" type="uint16" sf="GS_Split_KWh_SF" />
 	  <point id="GS_Split_AC2_L1_Buy_kWh" offset="42" type="uint16" sf="GS_Split_KWh_SF" />

@@ -52,6 +52,7 @@ void BatteryEnergyStorageSystem::Display (){
 
 void BatteryEnergyStorageSystem::ImportPower () {
 	block_map point;
+	std::cout << "MODE: " << radian_mode_ << std::endl;
 	if (radian_mode_ != "CHARGING") {
 		// each point must be created, written, then cleared
 		point ["GSconfig_Charger_Operating_Mode"] 
@@ -123,13 +124,14 @@ void BatteryEnergyStorageSystem::IdleLoss (){
 
 void BatteryEnergyStorageSystem::Log () {
 	Logger ("DATA", GetLogPath ()) 
-		<< "E: W, P, E, I: W, P, E"
+		<< "E: W, P, E, I: W, P, E, M"
 		<< GetExportWatts ()
 		<< GetExportPower ()
 		<< GetRatedExportEnergy ()
 		<< GetImportWatts ()
 		<< GetImportPower ()
-		<< GetRatedImportEnergy ();
+		<< GetRatedImportEnergy ()
+		<< radian_mode_;
 };
 
 // Get Rated Properties

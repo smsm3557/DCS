@@ -4,6 +4,7 @@
 #include "include/BatteryEnergyStorageSystem.h"
 #include "include/logger.h"
 
+// Constructor
 BatteryEnergyStorageSystem::BatteryEnergyStorageSystem (
 	tsu::config_map& map) : 
 	inverter_(map["Radian"]),
@@ -20,15 +21,34 @@ BatteryEnergyStorageSystem::BatteryEnergyStorageSystem (
 	BatteryEnergyStorageSystem::SetRadianConfigurations ();
 };
 
+// Destructor
 BatteryEnergyStorageSystem::~BatteryEnergyStorageSystem () {
-	// do nothing
+	block_map point;
+
+	// reset charge current to default
+	point ["GSconfig_Charger_AC_Input_Current_Limit"] = "30";
+	inverter_.WritePoint (64116, point);
+	point.clear();
+
+	// reset sell current to default
+	point ["OB_Set_Radian_Inverter_Sell_Current_Limit"] = "30";
+	inverter_.WritePoint (64120, point);
+	point.clear();
 };
 
+
+// Loop
+// - this is the main process function that will run in its own thread from main
+// - use limit checks to restrict function calls to a specific frequency
 void BatteryEnergyStorageSystem::Loop (float delta_time){
 	(void)delta_time;  // not used in this function for now
+
 	unsigned int utc = time (0);
-	bool five_seconds = (utc % 5 == 0);
-	bool one_minute = (utc % 60 == 0);
+	bool five_seconds = (utc % 5 == 0);  // the inverter is slow to process 
+	bool one_minute = (utc % 60 == 0);	 // logging once a minute should be fine
+
+	// the frequency bool must be checked with the last control/log because the
+	// main thread freqency is 0.5 seconds which leads to 2ish calls per second
 	if (five_seconds && utc != last_control_) {
 		last_control_ = utc;
 		BatteryEnergyStorageSystem::Query ();
@@ -37,30 +57,42 @@ void BatteryEnergyStorageSystem::Loop (float delta_time){
 		} else if (GetExportWatts () > 0) {
 			BatteryEnergyStorageSystem::ExportPower ();
 		} else {
-			//BatteryEnergyStorageSystem::Idleloss ();
+			BatteryEnergyStorageSystem::Idleloss ();
 		}
 	}
 	if (one_minute && utc != last_log_) {
 		last_log_ = utc;
 		BatteryEnergyStorageSystem::Log ();
 	}
-};
+};  // end Loop
 
+// Display
 void BatteryEnergyStorageSystem::Display (){
+	std::cout << "[Properties]"
+		<< "\n\tExport Watts:\t" << GetExportWatts ()
+		<< "\n\tExport Power:\t" << GetExportPower ()
+		<< "\n\tExport Energy:\t" << GetRatedExportEnergy ()
+		<< "\n\tImport Watts:\t" << GetImportWatts ()
+		<< "\n\tImport Watts:\t" << GetImportPower ()
+		<< "\n\tImport Watts:\t" << GetRatedImportEnergy ()
+		<< "\n\tRadian Mode:\t" << radian_mode_ << std::endl;;
+};  // end Display
 
-};
-
+// Import Power
+// - check the mode and if it is not charging then set the required registers
+// - for a charge. Then calculate the required current setting for the control
+// - watts.
 void BatteryEnergyStorageSystem::ImportPower () {
 	block_map point;
 	std::cout << "MODE: " << radian_mode_ << std::endl;
 	if (radian_mode_ != "CHARGING") {
 		// each point must be created, written, then cleared
-		point ["GSconfig_Charger_Operating_Mode"] 
-			= "BULK_AND_FLOAT_CHARGING_ENABLED";
+		point ["GSconfig_Sell_Volts"] = "64";
 		inverter_.WritePoint (64116, point);
 		point.clear();
 
-		point ["GSconfig_Sell_Volts"] = "60";
+		point ["GSconfig_Charger_Operating_Mode"] 
+			= "BULK_AND_FLOAT_CHARGING_ENABLED";
 		inverter_.WritePoint (64116, point);
 		point.clear();
 
@@ -78,8 +110,12 @@ void BatteryEnergyStorageSystem::ImportPower () {
 		inverter_.WritePoint (64116, point);
 		point.clear();
 	}
-};
+};  // end Import Power
 
+// Export Power
+// - check the mode and if it is not selling then set the required registers
+// - for a discharge. Then calculate the required current setting for the
+// - control watts.
 void BatteryEnergyStorageSystem::ExportPower () {
 	block_map point;
 	if (radian_mode_ != "SELLING") {
@@ -89,8 +125,7 @@ void BatteryEnergyStorageSystem::ExportPower () {
 		inverter_.WritePoint (64116, point);
 		point.clear();
 
-		point ["GSconfig_Sell_Volts"] 
-			= "42";
+		point ["GSconfig_Sell_Volts"] = "44";
 		inverter_.WritePoint (64116, point);
 		point.clear();
 	}
@@ -104,8 +139,10 @@ void BatteryEnergyStorageSystem::ExportPower () {
 		inverter_.WritePoint (64120, point);
 		point.clear();
 	}
-};
+};  // end Export Power
 
+// Idle Loss
+// - This function disables both importing from and exporting to the grid
 void BatteryEnergyStorageSystem::IdleLoss (){
 	block_map point;
 	if (radian_mode_ == "CHARGING" || radian_mode_ == "SELLING") {
@@ -116,12 +153,13 @@ void BatteryEnergyStorageSystem::IdleLoss (){
 		point.clear();
 
 		point ["GSconfig_Sell_Volts"] 
-			= "60";
+			= "64";
 		inverter_.WritePoint (64116, point);
 		point.clear();
 	}
-};
+};  // end Idle Loss
 
+// Log
 void BatteryEnergyStorageSystem::Log () {
 	Logger ("DATA", GetLogPath ()) 
 		<< "E: W, P, E, I: W, P, E, M"
@@ -132,7 +170,7 @@ void BatteryEnergyStorageSystem::Log () {
 		<< GetImportPower ()
 		<< GetRatedImportEnergy ()
 		<< radian_mode_;
-};
+};  // end Log
 
 // Get Rated Properties
 // - read specific device information an update member properties
@@ -142,7 +180,7 @@ void BatteryEnergyStorageSystem::GetRatedProperties () {
 
 	// radian power and energy properties
 	float rated_ac_amps 
-		= stof (radian_configs["GSconfig_Grid_AC_Input_Current_Limit"]);
+		= stof (radian_configs["GSconfig_Charger_AC_Input_Current_Limit"]);
 	float rated_ac_volts = stof (radian_configs["GSconfig_AC_Output_Voltage"]);
 	split_vac_ = rated_ac_volts;
 
@@ -233,33 +271,43 @@ void BatteryEnergyStorageSystem::Query () {
 // - sets the battery charge profile and inverter charge configs at the start
 // - of the program. Most of the values will not be changed after initialization
 void BatteryEnergyStorageSystem::SetRadianConfigurations () {
-	block_map point;
 	// each point must be created, written, then cleared
-	point ["GSconfig_Absorb_Volts"] = "57.6";
+	block_map point;
+
+	// OutBack has ranges fore most config registers found in Table 16 of the
+	// manual.
+	point ["GSconfig_Absorb_Volts"] = "57.6";  // range: 44 to 64 volts
+	inverter_.WritePoint (64116, point);
+
+	point ["GSconfig_Absorb_Time_Hours"] = "10";  // range: 0 to 24 hours
 	inverter_.WritePoint (64116, point);
 	point.clear();
 
-	point ["GSconfig_Absorb_Time_Hours"] = "10";
+	point ["GSconfig_Float_Volts"] = "54.4";  // range: 44 to 64 volts
 	inverter_.WritePoint (64116, point);
 	point.clear();
 
-	point ["GSconfig_Float_Volts"] = "54.4";
+	point ["GSconfig_Float_Time_Hours"] = "10";  // range: 0 to 24/7 hours
 	inverter_.WritePoint (64116, point);
 	point.clear();
 
-	point ["GSconfig_Float_Time_Hours"] = "10";
+	point ["GSconfig_ReFloat_Volts"] = "44";  // range: 44 to 64 volts
 	inverter_.WritePoint (64116, point);
 	point.clear();
 
-	point ["GSconfig_ReFloat_Volts"] = "42";
+	point ["GSconfig_Sell_Volts"] = "64";  // range: 44 to 64 volts
 	inverter_.WritePoint (64116, point);
 	point.clear();
 
-	point ["GSconfig_Sell_Volts"] = "60";
+	point ["GSconfig_Low_Battery_Cut_Out_Voltage"] = "64";  // range: 36 to 48
+	inverter_.WritePoint (64116, point);
+	point.clear();
+	
+	point ["GSconfig_Low_Battery_Cut_In_Voltage"] = "64";  // range: 40 - 56
 	inverter_.WritePoint (64116, point);
 	point.clear();
 
-	point ["GSconfig_Charger_AC_Input_Current_Limit"] = "50";
+	point ["GSconfig_Charger_AC_Input_Current_Limit"] = "30";  // range: 0 - 30
 	inverter_.WritePoint (64116, point);
 	point.clear();
 
@@ -280,10 +328,6 @@ void BatteryEnergyStorageSystem::SetRadianConfigurations () {
 	inverter_.WritePoint (64116, point);
 	point.clear();
 };  // end Set Radian Configurations
-
-void BatteryEnergyStorageSystem::SetDischargeProfile () {
-
-};
 
 // Check BMS Errors
 // - check the current fault/warning codes agains previous and if they are the

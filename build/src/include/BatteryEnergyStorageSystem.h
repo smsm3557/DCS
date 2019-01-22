@@ -35,7 +35,6 @@ class BatteryEnergyStorageSystem : public DistributedEnergyResource {
         void GetRatedProperties ();
         void Query ();
         void SetRadianConfigurations ();
-        void SetDischargeProfile ();
         void CheckBMSErrors (block_map& block);
         void CheckRadianErrors (block_map& block);
 

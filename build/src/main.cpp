@@ -36,7 +36,7 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "include/DistributedEnergyResource.h"
+#include "include/BatteryEnergyStorageSystem.h"
 #include "include/CommandLineInterface.h"
 #include "include/Operator.h"
 #include "include/SmartGridDevice.h"
@@ -212,9 +212,9 @@ int main (int argc, char** argv) {
     tsu::config_map configs = tsu::MapConfigFile (arguments["config"]);
 
     cout << "\tCreating Distributed Energy Resource\n";
-    // ~ reference DistributedEnergyResource
-    DistributedEnergyResource* der_ptr 
-    	= new DistributedEnergyResource(configs["DER"]);
+    // ~ reference DistributedEnergyResource and BatteryEnergyStorageSystem
+    BatteryEnergyStorageSystem* der_ptr 
+        = new BatteryEnergyStorageSystem(configs);
 
     cout << "\tCreating Operator\n";
     // ~ reference Operator.h

@@ -18,7 +18,7 @@ export BST_INC=$HOME/src/boost_1_66_0
 export LD_LIBRARY_PATH=$BST_LIB:$LD_LIBRARY_PATH
 
 # build
-export SRC=dcs
+export SRC=bess
 make -C ../build
 
 # run

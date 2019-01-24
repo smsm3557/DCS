@@ -134,5 +134,5 @@ The program can be controlled three ways:
 ## Class UML
 
 <p align="center">
-  <img src="DCS_Class_UML.png" alt="Class UML">
+  <img src="DCS_BESS_Class_UML.png" alt="Class UML">
 </p>
